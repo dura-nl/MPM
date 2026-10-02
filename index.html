@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="nl" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#09090b">
+  <title>Pocketcoach: Focus & Systeem</title>
+  
+  <!-- Tailwind CSS & Google Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              amber: '#f59e0b',
+              emerald: '#10b981',
+              zincDark: '#09090b',
+              surface: '#121217',
+              border: '#27272a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    /* Verbeterde mobiele feel & scrollbars */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    input, textarea {
+      user-select: text;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .custom-scroll {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .progress-ring-circle {
+      transition: stroke-dashoffset 0.35s ease-in-out;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 font-sans min-h-screen pb-28 antialiased selection:bg-amber-500/30">
+
+  <header class="sticky top-0 z-40 bg-zinc-950/85 backdrop-blur-md border-b border-zinc-850 px-4 py-3 sm:px-6">
+    <div class="max-w-xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 flex items-center justify-center text-zinc-950 font-black text-sm shadow-lg shadow-amber-500/20">
+          ⚡
+        </div>
+        <div>
+          <h1 class="text-base font-extrabold tracking-tight leading-none text-white">POCKETCOACH</h1>
+          <p id="header-date" class="text-[11px] font-medium text-zinc-400 mt-0.5 capitalize">Vandaag</p>
+        </div>
+      </div>
+      
+      <!-- Snelstatus streak & MED indicator -->
+      <div class="flex items-center gap-2">
+        <div id="streak-badge" class="flex items-center gap-1.5 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-xs font-semibold text-amber-400 shadow-sm">
+          <span>🔥</span>
+          <span id="streak-count">0</span> dagen
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hoofd navigatie tabs voor ADHD overzicht -->
+  <div class="max-w-xl mx-auto px-4 mt-3">
+    <nav class="grid grid-cols-3 p-1 bg-zinc-900/90 rounded-2xl border border-zinc-800/80 text-xs font-semibold">
+      <button onclick="switchTab('today')" id="tab-btn-today" class="py-2.5 rounded-xl transition-all duration-200 text-center bg-zinc-800 text-white shadow-sm flex items-center justify-center gap-1.5">
+        <i data-lucide="sun" class="w-3.5 h-3.5 text-amber-400"></i>
+        <span>Vandaag</span>
+      </button>
+      <button onclick="switchTab('timer')" id="tab-btn-timer" class="py-2.5 rounded-xl transition-all duration-200 text-center text-zinc-400 hover:text-zinc-200 flex items-center justify-center gap-1.5">
+        <i data-lucide="hourglass" class="w-3.5 h-3.5 text-blue-400"></i>
+        <span>Focus Timer</span>
+      </button>
+      <button onclick="switchTab('inbox')" id="tab-btn-inbox" class="py-2.5 rounded-xl transition-all duration-200 text-center text-zinc-400 hover:text-zinc-200 flex items-center justify-center gap-1.5 relative">
+        <i data-lucide="inbox" class="w-3.5 h-3.5 text-emerald-400"></i>
+        <span>GTD Dump</span>
+        <span id="badge-inbox-count" class="hidden absolute top-1 right-2 w-4 h-4 rounded-full bg-emerald-500 text-[9px] text-zinc-950 font-bold flex items-center justify-center">0</span>
+      </button>
+    </nav>
+  </div>
+
+  <main class="max-w-xl mx-auto p-4 space-y-6">
+
+    <div id="view-today" class="space-y-6">
+      
+      <!-- 1. The Big One (Tim Ferriss 80/20 & One Day Method) -->
+      <section class="relative group overflow-hidden bg-gradient-to-b from-zinc-900 to-zinc-900/70 border border-amber-500/30 rounded-2xl p-4 sm:p-5 shadow-xl shadow-amber-950/10">
+        <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div class="flex items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex p-1.5 bg-amber-500/10 text-amber-400 rounded-lg">
+              <i data-lucide="crosshair" class="w-4 h-4"></i>
+            </span>
+            <span class="text-xs font-bold uppercase tracking-wider text-amber-300">De Ene Belangrijke Taak (80/20)</span>
+          </div>
+          <span class="text-[10px] text-zinc-500 font-mono tracking-tight uppercase">Top Prioriteit</span>
+        </div>
+
+        <p class="text-xs text-zinc-400 mb-2">Als je vandaag maar één ding afrondt om tevreden te zijn:</p>
+        
+        <div class="flex items-center gap-3 bg-zinc-950/80 border border-zinc-800 rounded-xl p-3 focus-within:border-amber-500/50 transition">
+          <button id="big-one-toggle" onclick="toggleBigOne()" class="shrink-0 w-6 h-6 rounded-lg border-2 border-zinc-700 flex items-center justify-center transition bg-zinc-900 hover:border-amber-400">
+            <i id="big-one-icon" data-lucide="check" class="w-4 h-4 text-transparent transition"></i>
+          </button>
+          <input 
+            type="text" 
+            id="big-one-input" 
+            placeholder="Typ jouw belangrijkste hefboomactie..."
+            class="w-full bg-transparent text-sm sm:text-base font-semibold text-white placeholder:text-zinc-600 focus:outline-none"
+            oninput="saveBigOne(this.value)"
+          />
+        </div>
+      </section>
+
+      <!-- 2. Dagdelen (The One Day Method) -->
+      <section class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="calendar" class="w-4 h-4 text-zinc-400"></i>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400">One Day Dagdelen (Max 3/blok)</h2>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-2.5">
+          <!-- Ochtend -->
+          <div class="bg-zinc-900/70 border border-zinc-800 rounded-xl p-3.5 space-y-2.5">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-amber-300 flex items-center gap-1.5">
+                <span>🌅</span> Ochtend (Diep Werk)
+              </span>
+              <span id="count-morning" class="text-[11px] text-zinc-500 font-mono">0 taken</span>
+            </div>
+            <div id="list-morning" class="space-y-1.5"></div>
+            <div class="flex gap-2 pt-1">
+              <input type="text" id="input-morning" placeholder="+ Voeg actie toe..." class="flex-1 bg-zinc-950/60 border border-zinc-800/80 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700">
+              <button onclick="addTask('morning')" class="px-2.5 py-1.5 bg-zinc-800 text-zinc-200 text-xs rounded-lg font-medium hover:bg-zinc-700">Toevoegen</button>
+            </div>
+          </div>
+
+          <!-- Middag -->
+          <div class="bg-zinc-900/70 border border-zinc-800 rounded-xl p-3.5 space-y-2.5">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-orange-300 flex items-center gap-1.5">
+                <span>☀️</span> Middag (Batching & Uitvoeren)
+              </span>
+              <span id="count-afternoon" class="text-[11px] text-zinc-500 font-mono">0 taken</span>
+            </div>
+            <div id="list-afternoon" class="space-y-1.5"></div>
+            <div class="flex gap-2 pt-1">
+              <input type="text" id="input-afternoon" placeholder="+ Voeg actie toe..." class="flex-1 bg-zinc-950/60 border border-zinc-800/80 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700">
+              <button onclick="addTask('afternoon')" class="px-2.5 py-1.5 bg-zinc-800 text-zinc-200 text-xs rounded-lg font-medium hover:bg-zinc-700">Toevoegen</button>
+            </div>
+          </div>
+
+          <!-- Avond -->
+          <div class="bg-zinc-900/70 border border-zinc-800 rounded-xl p-3.5 space-y-2.5">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-indigo-300 flex items-center gap-1.5">
+                <span>🌙</span> Avond (Reset & Afsluiting)
+              </span>
+              <span id="count-evening" class="text-[11px] text-zinc-500 font-mono">0 taken</span>
+            </div>
+            <div id="list-evening" class="space-y-1.5"></div>
+            <div class="flex gap-2 pt-1">
+              <input type="text" id="input-evening" placeholder="+ Voeg actie toe..." class="flex-1 bg-zinc-950/60 border border-zinc-800/80 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700">
+              <button onclick="addTask('evening')" class="px-2.5 py-1.5 bg-zinc-800 text-zinc-200 text-xs rounded-lg font-medium hover:bg-zinc-700">Toevoegen</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Dagelijkse Ankers (75 Hard & MED Fysiek) -->
+      <section class="space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Dagelijkse Ankers (75 Hard / MED)</h2>
+          </div>
+          <span id="anchors-progress-text" class="text-xs font-mono font-bold text-emerald-400">0/4</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <!-- Water -->
+          <button onclick="toggleAnchor('water')" id="anchor-card-water" class="flex flex-col p-3 rounded-xl border border-zinc-800 bg-zinc-900/80 text-left transition hover:border-zinc-700">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-lg">💧</span>
+              <div id="anchor-check-water" class="w-5 h-5 rounded-md border border-zinc-700 bg-zinc-950 flex items-center justify-center">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-transparent"></i>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-white">Water (2.5L - 3L)</span>
+            <span class="text-[10px] text-zinc-500 mt-0.5">Hydratatie brandstof</span>
+          </button>
+
+          <!-- Training MED -->
+          <button onclick="toggleAnchor('workout')" id="anchor-card-workout" class="flex flex-col p-3 rounded-xl border border-zinc-800 bg-zinc-900/80 text-left transition hover:border-zinc-700">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-lg">🏋️‍♂️</span>
+              <div id="anchor-check-workout" class="w-5 h-5 rounded-md border border-zinc-700 bg-zinc-950 flex items-center justify-center">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-transparent"></i>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-white">MED Training</span>
+            <span class="text-[10px] text-zinc-500 mt-0.5">30-45m beweging</span>
+          </button>
+
+          <!-- Lezen -->
+          <button onclick="toggleAnchor('reading')" id="anchor-card-reading" class="flex flex-col p-3 rounded-xl border border-zinc-800 bg-zinc-900/80 text-left transition hover:border-zinc-700">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-lg">📖</span>
+              <div id="anchor-check-reading" class="w-5 h-5 rounded-md border border-zinc-700 bg-zinc-950 flex items-center justify-center">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-transparent"></i>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-white">10 Pagina's</span>
+            <span class="text-[10px] text-zinc-500 mt-0.5">Non-fictie focus</span>
+          </button>
+
+          <!-- Clean Fuel -->
+          <button onclick="toggleAnchor('fuel')" id="anchor-card-fuel" class="flex flex-col p-3 rounded-xl border border-zinc-800 bg-zinc-900/80 text-left transition hover:border-zinc-700">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-lg">🥗</span>
+              <div id="anchor-check-fuel" class="w-5 h-5 rounded-md border border-zinc-700 bg-zinc-950 flex items-center justify-center">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-transparent"></i>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-white">Schone Voeding</span>
+            <span class="text-[10px] text-zinc-500 mt-0.5">Geen rotzooi / suikers</span>
+          </button>
+        </div>
+      </section>
+
+    </div>
+
+    <div id="view-timer" class="hidden space-y-6">
+      
+      <section class="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 text-center space-y-6 shadow-2xl relative overflow-hidden">
+        <!-- Keuzeknoppen timers -->
+        <div class="flex items-center justify-center gap-2 p-1.5 bg-zinc-950 rounded-2xl border border-zinc-800/80 max-w-sm mx-auto">
+          <button onclick="selectTimerPreset(120, '2m')" id="preset-2m" class="flex-1 py-2 px-3 text-xs font-bold rounded-xl transition bg-amber-500 text-zinc-950 shadow">
+            2 min (GTD)
+          </button>
+          <button onclick="selectTimerPreset(1500, '25m')" id="preset-25m" class="flex-1 py-2 px-3 text-xs font-bold rounded-xl transition text-zinc-400 hover:text-white">
+            25 min (Pomo)
+          </button>
+          <button onclick="selectTimerPreset(3600, '60m')" id="preset-60m" class="flex-1 py-2 px-3 text-xs font-bold rounded-xl transition text-zinc-400 hover:text-white">
+            60 min (Deep)
+          </button>
+        </div>
+
+        <!-- Timer Cirkel & Countdown Display -->
+        <div class="relative w-64 h-64 mx-auto flex items-center justify-center">
+          <svg class="w-full h-full transform -rotate-90">
+            <circle cx="128" cy="128" r="110" stroke="#27272a" stroke-width="10" fill="transparent"/>
+            <circle id="timer-progress-ring" cx="128" cy="128" r="110" stroke="#f59e0b" stroke-width="10" stroke-linecap="round" fill="transparent" stroke-dasharray="691.15" stroke-dashoffset="0" class="transition-all duration-300 ease-linear"/>
+          </svg>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <span id="timer-display" class="text-5xl font-black tracking-tight font-mono text-white">02:00</span>
+            <span id="timer-label" class="text-xs font-semibold text-amber-400 uppercase tracking-widest mt-2">GTD Quick Rule</span>
+          </div>
+        </div>
+
+        <p id="timer-hint" class="text-xs text-zinc-400 max-w-xs mx-auto leading-relaxed">
+          "Kost het minder dan 2 minuten? Doe het nu meteen. Niet opschrijven, niet plannen. Meteen afronden!"
+        </p>
+
+        <!-- Knoppen Start / Pause / Reset -->
+        <div class="flex items-center justify-center gap-3">
+          <button onclick="resetTimer()" class="p-3.5 rounded-2xl bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition" title="Opnieuw">
+            <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+          </button>
+          
+          <button id="timer-play-btn" onclick="toggleTimer()" class="px-8 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-extrabold text-sm transition flex items-center gap-2 shadow-lg shadow-amber-500/25">
+            <i id="timer-play-icon" data-lucide="play" class="w-5 h-5 fill-current"></i>
+            <span id="timer-play-text">Starten</span>
+          </button>
+          
+          <button onclick="soundTest()" class="p-3.5 rounded-2xl bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition" title="Test Audio & Haptics">
+            <i data-lucide="volume-2" class="w-5 h-5"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- ADHD Focus tip kaart -->
+      <div class="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-4 flex gap-3 items-start">
+        <div class="p-2 rounded-xl bg-blue-500/10 text-blue-400 shrink-0">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+        </div>
+        <div class="text-xs space-y-1">
+          <h4 class="font-bold text-zinc-200">ADHD Brein Hack</h4>
+          <p class="text-zinc-400 leading-relaxed">
+            Begin met de 2-minuten regel als opstapje (frictieloos starten). Zodra de weerstand weg is, schakel je soepel door naar 25 minuten Pomodoro flow.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="view-inbox" class="hidden space-y-5">
+      <section class="space-y-4">
+        <div>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-400">GTD External Brain (Dumpzone)</h2>
+          <p class="text-xs text-zinc-400 mt-1">Geen mentale load meer vasthouden. Dump alles direct uit je hoofd en beslis later.</p>
+        </div>
+
+        <!-- Dump invoerveld -->
+        <div class="flex gap-2">
+          <input 
+            type="text" 
+            id="gtd-dump-input" 
+            placeholder="Dump een gedachte, taak of idee..." 
+            class="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition"
+            onkeydown="if(event.key === 'Enter') addDumpItem()"
+          />
+          <button onclick="addDumpItem()" class="px-5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-sm rounded-xl transition flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <i data-lucide="plus" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Inbox items lijst met acties -->
+        <div class="space-y-2" id="gtd-dump-list">
+          <!-- Dynamisch gegenereerd -->
+        </div>
+
+        <div id="empty-inbox-placeholder" class="hidden p-8 border border-dashed border-zinc-800 rounded-2xl text-center">
+          <i data-lucide="check-circle" class="w-8 h-8 text-zinc-600 mx-auto mb-2"></i>
+          <p class="text-xs font-semibold text-zinc-400">Je hoofd is helemaal leeg!</p>
+          <p class="text-[11px] text-zinc-600 mt-0.5">Inbox Zero bereikt.</p>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <script>
+    // State Management
+    const APP_STORAGE_KEY = 'pocketcoach_state_v1';
+
+    const defaultState = {
+      streak: 0,
+      lastActiveDate: null,
+      bigOne: '',
+      bigOneDone: false,
+      anchors: {
+        water: false,
+        workout: false,
+        reading: false,
+        fuel: false
+      },
+      schedule: {
+        morning: [],
+        afternoon: [],
+        evening: []
+      },
+      inbox: [
+        { id: 1, text: 'Mailen met belastingadviseur over kwartaalaangifte' },
+        { id: 2, text: 'Nieuwe hardloopschoenen bestellen (MED)' }
+      ]
+    };
+
+    let appState = loadState();
+
+    function loadState() {
+      try {
+        const stored = localStorage.getItem(APP_STORAGE_KEY);
+        if (!stored) return defaultState;
+        const parsed = JSON.parse(stored);
+        
+        // Dagelijkse reset controle (als de dag veranderd is)
+        const todayStr = new Date().toISOString().slice(0, 10);
+        if (parsed.lastActiveDate !== todayStr) {
+          // Bepaal of alle anchors gisteren voltooid waren voor streak
+          const allAnchorsDone = Object.values(parsed.anchors || {}).every(Boolean) && parsed.bigOneDone;
+          
+          if (parsed.lastActiveDate) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().slice(0, 10);
+            
+            if (parsed.lastActiveDate === yesterdayStr && allAnchorsDone) {
+              parsed.streak = (parsed.streak || 0) + 1;
+            } else if (parsed.lastActiveDate !== yesterdayStr) {
+              // Meer dan 1 dag gemist
+              parsed.streak = 0;
+            }
+          }
+
+          // Reset dagelijkse doelen voor de nieuwe dag
+          parsed.bigOneDone = false;
+          parsed.anchors = { water: false, workout: false, reading: false, fuel: false };
+          parsed.schedule = { morning: [], afternoon: [], evening: [] };
+          parsed.lastActiveDate = todayStr;
+        }
+
+        return { ...defaultState, ...parsed };
+      } catch (e) {
+        console.error("Fout bij laden state:", e);
+        return defaultState;
+      }
+    }
+
+    function saveState() {
+      appState.lastActiveDate = new Date().toISOString().slice(0, 10);
+      localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(appState));
+      updateUI();
+    }
+
+    // Audio Feedback via Web Audio API (Synthesizer Chimes)
+    let audioCtx = null;
+    function playChime(type = 'success') {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'success') {
+          // Heldere dubbele toon
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, now); // D5
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+          osc.start(now);
+          osc.stop(now + 0.4);
+        } else if (type === 'complete') {
+          // Triomfantelijk akoord voor timer voltooiing
+          [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+            const chordOsc = audioCtx.createOscillator();
+            const chordGain = audioCtx.createGain();
+            chordOsc.type = 'triangle';
+            chordOsc.frequency.value = freq;
+            chordOsc.connect(chordGain);
+            chordGain.connect(audioCtx.destination);
+            chordGain.gain.setValueAtTime(0.1, now + (i * 0.08));
+            chordGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8 + (i * 0.08));
+            chordOsc.start(now + (i * 0.08));
+            chordOsc.stop(now + 0.8 + (i * 0.08));
+          });
+        }
+      } catch (err) {
+        console.log("Audio not allowed yet:", err);
+      }
+
+      // Haptische feedback op ondersteunde telefoons
+      if (window.navigator && window.navigator.vibrate) {
+        if (type === 'complete') window.navigator.vibrate([100, 50, 100, 50, 200]);
+        else window.navigator.vibrate(40);
+      }
+    }
+
+    function soundTest() {
+      playChime('complete');
+    }
+
+    function switchTab(tab) {
+      document.getElementById('view-today').classList.toggle('hidden', tab !== 'today');
+      document.getElementById('view-timer').classList.toggle('hidden', tab !== 'timer');
+      document.getElementById('view-inbox').classList.toggle('hidden', tab !== 'inbox');
+
+      const tabs = ['today', 'timer', 'inbox'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (t === tab) {
+          btn.className = "py-2.5 rounded-xl transition-all duration-200 text-center bg-zinc-800 text-white shadow-sm flex items-center justify-center gap-1.5";
+        } else {
+          btn.className = "py-2.5 rounded-xl transition-all duration-200 text-center text-zinc-400 hover:text-zinc-200 flex items-center justify-center gap-1.5";
+        }
+      });
+      lucide.createIcons();
+    }
+
+    function saveBigOne(val) {
+      appState.bigOne = val;
+      localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(appState));
+    }
+
+    function toggleBigOne() {
+      appState.bigOneDone = !appState.bigOneDone;
+      if (appState.bigOneDone) {
+        playChime('success');
+      }
+      saveState();
+    }
+
+    function toggleAnchor(key) {
+      appState.anchors[key] = !appState.anchors[key];
+      if (appState.anchors[key]) playChime('success');
+      saveState();
+    }
+
+    // Dagdelen Taken Toevoegen & Afvinken
+    function addTask(period) {
+      const input = document.getElementById(`input-${period}`);
+      const val = input.value.trim();
+      if (!val) return;
+
+      if (!appState.schedule[period]) appState.schedule[period] = [];
+      appState.schedule[period].push({ id: Date.now(), text: val, done: false });
+      input.value = '';
+      saveState();
+    }
+
+    function toggleTask(period, id) {
+      const task = appState.schedule[period].find(t => t.id === id);
+      if (task) {
+        task.done = !task.done;
+        if (task.done) playChime('success');
+        saveState();
+      }
+    }
+
+    function deleteTask(period, id) {
+      appState.schedule[period] = appState.schedule[period].filter(t => t.id !== id);
+      saveState();
+    }
+
+    function addDumpItem() {
+      const input = document.getElementById('gtd-dump-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appState.inbox.unshift({ id: Date.now(), text });
+      input.value = '';
+      playChime('success');
+      saveState();
+    }
+
+    function deleteDumpItem(id) {
+      appState.inbox = appState.inbox.filter(item => item.id !== id);
+      saveState();
+    }
+
+    function moveDumpToToday(id, period = 'morning') {
+      const item = appState.inbox.find(i => i.id === id);
+      if (!item) return;
+
+      if (!appState.schedule[period]) appState.schedule[period] = [];
+      appState.schedule[period].push({ id: Date.now(), text: item.text, done: false });
+      
+      // Verwijder uit inbox
+      appState.inbox = appState.inbox.filter(i => i.id !== id);
+      playChime('success');
+      saveState();
+      switchTab('today');
+    }
+
+    let timerTotalSeconds = 120;
+    let timerRemaining = 120;
+    let timerInterval = null;
+    let currentPreset = '2m';
+
+    const presetsConfig = {
+      '2m': {
+        seconds: 120,
+        label: 'GTD Quick Rule',
+        hint: '"Kost het minder dan 2 minuten? Doe het nu meteen. Niet opschrijven, niet plannen. Meteen afronden!"'
+      },
+      '25m': {
+        seconds: 1500,
+        label: 'Pomodoro Focusblok',
+        hint: '"25 minuten pure monotasking. Sluit alle tabbladen en notificaties. Alleen deze ene taak."'
+      },
+      '60m': {
+        seconds: 3600,
+        label: 'Deep Work Power Hour',
+        hint: '"Een intensief hefboomuur voor grote vooruitgang. Zorg voor water bij de hand en duik de diepte in."'
+      }
+    };
+
+    function selectTimerPreset(seconds, presetKey) {
+      pauseTimer();
+      currentPreset = presetKey;
+      timerTotalSeconds = seconds;
+      timerRemaining = seconds;
+
+      // Update styling buttons
+      ['2m', '25m', '60m'].forEach(key => {
+        const btn = document.getElementById(`preset-${key}`);
+        if (key === presetKey) {
+          btn.className = "flex-1 py-2 px-3 text-xs font-bold rounded-xl transition bg-amber-500 text-zinc-950 shadow";
+        } else {
+          btn.className = "flex-1 py-2 px-3 text-xs font-bold rounded-xl transition text-zinc-400 hover:text-white";
+        }
+      });
+
+      document.getElementById('timer-label').textContent = presetsConfig[presetKey].label;
+      document.getElementById('timer-hint').textContent = presetsConfig[presetKey].hint;
+      
+      updateTimerDisplay();
+    }
+
+    function toggleTimer() {
+      if (timerInterval) {
+        pauseTimer();
+      } else {
+        startTimer();
+      }
+    }
+
+    function startTimer() {
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      
+      timerInterval = setInterval(() => {
+        if (timerRemaining > 0) {
+          timerRemaining--;
+          updateTimerDisplay();
+        } else {
+          pauseTimer();
+          playChime('complete');
+        }
+      }, 1000);
+
+      document.getElementById('timer-play-text').textContent = 'Pauze';
+      document.getElementById('timer-play-icon').setAttribute('data-lucide', 'pause');
+      lucide.createIcons();
+    }
+
+    function pauseTimer() {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      document.getElementById('timer-play-text').textContent = 'Starten';
+      document.getElementById('timer-play-icon').setAttribute('data-lucide', 'play');
+      lucide.createIcons();
+    }
+
+    function resetTimer() {
+      pauseTimer();
+      timerRemaining = timerTotalSeconds;
+      updateTimerDisplay();
+    }
+
+    function updateTimerDisplay() {
+      const minutes = Math.floor(timerRemaining / 60);
+      const seconds = timerRemaining % 60;
+      const formatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      document.getElementById('timer-display').textContent = formatted;
+
+      // Ring berekening (691.15 is omtrek van cirkel r=110)
+      const circumference = 2 * Math.PI * 110;
+      const percent = timerRemaining / timerTotalSeconds;
+      const offset = circumference - (percent * circumference);
+      document.getElementById('timer-progress-ring').style.strokeDashoffset = offset;
+    }
+
+    function updateUI() {
+      // 1. Datum & Streaks
+      const dateOptions = { weekday: 'long', day: 'numeric', month: 'short' };
+      document.getElementById('header-date').textContent = new Date().toLocaleDateString('nl-NL', dateOptions);
+      document.getElementById('streak-count').textContent = appState.streak;
+
+      // 2. The Big One
+      const bigOneInput = document.getElementById('big-one-input');
+      if (document.activeElement !== bigOneInput) {
+        bigOneInput.value = appState.bigOne || '';
+      }
+      const bigOneIcon = document.getElementById('big-one-icon');
+      const bigOneBtn = document.getElementById('big-one-toggle');
+      if (appState.bigOneDone) {
+        bigOneIcon.classList.remove('text-transparent');
+        bigOneIcon.classList.add('text-amber-950');
+        bigOneBtn.className = "shrink-0 w-6 h-6 rounded-lg border-2 border-amber-400 bg-amber-400 flex items-center justify-center transition";
+        bigOneInput.classList.add('line-through', 'text-zinc-500');
+      } else {
+        bigOneIcon.classList.add('text-transparent');
+        bigOneIcon.classList.remove('text-amber-950');
+        bigOneBtn.className = "shrink-0 w-6 h-6 rounded-lg border-2 border-zinc-700 bg-zinc-900 flex items-center justify-center transition hover:border-amber-400";
+        bigOneInput.classList.remove('line-through', 'text-zinc-500');
+      }
+
+      // 3. Anchors (75 Hard)
+      const anchorKeys = ['water', 'workout', 'reading', 'fuel'];
+      let completedAnchors = 0;
+      anchorKeys.forEach(key => {
+        const isDone = !!appState.anchors[key];
+        if (isDone) completedAnchors++;
+        const card = document.getElementById(`anchor-card-${key}`);
+        const check = document.getElementById(`anchor-check-${key}`);
+        const icon = check.querySelector('i');
+
+        if (isDone) {
+          card.classList.add('border-emerald-500/50', 'bg-emerald-950/20');
+          check.className = "w-5 h-5 rounded-md border border-emerald-400 bg-emerald-400 flex items-center justify-center";
+          icon.classList.remove('text-transparent');
+          icon.classList.add('text-zinc-950');
+        } else {
+          card.classList.remove('border-emerald-500/50', 'bg-emerald-950/20');
+          check.className = "w-5 h-5 rounded-md border border-zinc-700 bg-zinc-950 flex items-center justify-center";
+          icon.classList.add('text-transparent');
+          icon.classList.remove('text-zinc-950');
+        }
+      });
+      document.getElementById('anchors-progress-text').textContent = `${completedAnchors}/${anchorKeys.length}`;
+
+      // 4. One Day Taken per dagdeel
+      ['morning', 'afternoon', 'evening'].forEach(period => {
+        const list = document.getElementById(`list-${period}`);
+        const count = document.getElementById(`count-${period}`);
+        const tasks = appState.schedule[period] || [];
+
+        count.textContent = `${tasks.length} taken`;
+        list.innerHTML = '';
+
+        tasks.forEach(task => {
+          const item = document.createElement('div');
+          item.className = "flex items-center justify-between p-2 rounded-lg bg-zinc-950/60 border border-zinc-850 group";
+          item.innerHTML = `
+            <div class="flex items-center gap-2 min-w-0 cursor-pointer" onclick="toggleTask('${period}', ${task.id})">
+              <div class="w-4 h-4 rounded border ${task.done ? 'bg-amber-400 border-amber-400 text-zinc-950' : 'border-zinc-700 bg-zinc-900'} flex items-center justify-center">
+                <i data-lucide="check" class="w-3 h-3 ${task.done ? 'text-zinc-950' : 'text-transparent'}"></i>
+              </div>
+              <span class="text-xs truncate ${task.done ? 'line-through text-zinc-500' : 'text-zinc-200'}">${escapeHtml(task.text)}</span>
+            </div>
+            <button onclick="deleteTask('${period}', ${task.id})" class="opacity-60 hover:opacity-100 p-1 text-zinc-500 hover:text-red-400 transition">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          `;
+          list.appendChild(item);
+        });
+      });
+
+      // 5. GTD Dump Inbox
+      const dumpList = document.getElementById('gtd-dump-list');
+      const emptyPlaceholder = document.getElementById('empty-inbox-placeholder');
+      const badgeCount = document.getElementById('badge-inbox-count');
+      dumpList.innerHTML = '';
+
+      if (appState.inbox.length === 0) {
+        emptyPlaceholder.classList.remove('hidden');
+        badgeCount.classList.add('hidden');
+      } else {
+        emptyPlaceholder.classList.add('hidden');
+        badgeCount.classList.remove('hidden');
+        badgeCount.textContent = appState.inbox.length;
+
+        appState.inbox.forEach(item => {
+          const card = document.createElement('div');
+          card.className = "flex items-center justify-between p-3.5 bg-zinc-900 border border-zinc-800 rounded-xl gap-3";
+          card.innerHTML = `
+            <span class="text-xs text-zinc-200 break-words flex-1">${escapeHtml(item.text)}</span>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <!-- Snel verplaatsen naar Vandaag knop -->
+              <button onclick="moveDumpToToday(${item.id}, 'morning')" class="px-2 py-1 bg-amber-500/10 text-amber-300 hover:bg-amber-500 hover:text-zinc-950 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition" title="Naar Vandaag Ochtend">
+                <i data-lucide="arrow-right" class="w-3 h-3"></i> Vandaag
+              </button>
+              <button onclick="deleteDumpItem(${item.id})" class="p-1.5 text-zinc-500 hover:text-red-400 rounded-lg transition" title="Weggooien">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+          `;
+          dumpList.appendChild(card);
+        });
+      }
+
+      lucide.createIcons();
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // Direct opstarten
+    window.addEventListener('DOMContentLoaded', () => {
+      updateUI();
+      updateTimerDisplay();
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
